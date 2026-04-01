@@ -12,61 +12,57 @@ python3 -m venv .venv
 
 ## Реализованные тесты
 
-Ниже перечислены тесты и то, что каждый из них проверяет. Часть сценариев объединена **параметризацией** (`@pytest.mark.parametrize`) — один и тот же код прогоняется с разными входными данными.
+Тесты сгруппированы в **классы** (`TestAddNewBook`, `TestSetBookGenre`, …), внутри классов — методы `test_*`. Часть сценариев объединена **параметризацией** (`@pytest.mark.parametrize`).
 
-### `add_new_book`
+### `add_new_book` — класс `TestAddNewBook`
 
-| Тест | Описание |
+| Метод | Описание |
 |------|----------|
-| `test_add_new_book_has_empty_genre` | После добавления корректного названия книга попадает в `books_genre`, жанр пустая строка. (Параметризовано по имени книги.) |
-| `test_add_new_book_invalid_name_not_added` | Пустое имя и имя длиной 41 символ не добавляются в словарь. |
-| `test_add_new_book_same_title_twice_after_genre_set` | Повторный вызов `add_new_book` для той же книги после `set_book_genre` не создаёт дубликат ключа; жанр не сбрасывается. |
+| `test_add_new_book_has_empty_genre` | Книга попадает в `books_genre` с пустым жанром. Параметризация по названию. |
+| `test_add_new_book_invalid_name_not_added` | Пустое имя и имя длиной 41 символ не добавляются. |
+| `test_add_new_book_same_title_only_once` | Повторный `add_new_book` с тем же названием не создаёт второй ключ; жанр остаётся пустым. |
 
-### `set_book_genre`
+### `set_book_genre` — класс `TestSetBookGenre`
 
-| Тест | Описание |
+| Метод | Описание |
 |------|----------|
-| `test_set_book_genre` | Для существующей книги и жанра из списка `genre` жанр сохраняется в `books_genre`. |
-| `test_set_book_genre_invalid_does_not_change` | Жанр не меняется, если книги нет в словаре или жанр не из допустимого списка. (Два набора данных: «книга отсутствует», «жанр не из списка».) |
+| `test_set_book_genre` | Для существующей книги и жанра из списка `genre` жанр сохраняется. |
+| `test_set_book_genre_invalid_does_not_change` | Неизвестная книга или недопустимый жанр не меняют запись «Дюна» (после `add_new_book` пустой жанр уже по умолчанию). |
 
-### `get_book_genre`
+### `get_book_genre` — класс `TestGetBookGenre`
 
-| Тест | Описание |
+| Метод | Описание |
 |------|----------|
-| `test_get_book_genre` | Для книги в словаре возвращается установленный жанр; для отсутствующей книги — `None`. |
+| `test_get_book_genre` | Для книги в словаре — установленный жанр; для отсутствующей — `None`. |
 
-### `get_books_with_specific_genre`
+### `get_books_with_specific_genre` — класс `TestGetBooksWithSpecificGenre`
 
-| Тест | Описание |
+| Метод | Описание |
 |------|----------|
-| `test_get_books_with_specific_genre` | Из нескольких книг с разными жанрами метод возвращает только те, у кого выбранный жанр (на примере «Мультфильмы»). |
+| `test_returns_titles_with_given_genre` | Среди книг с разными жанрами возвращаются только названия с выбранным жанром («Мультфильмы»). |
 
-### `get_books_genre`
+### `get_books_genre` — класс `TestGetBooksGenre`
 
-| Тест | Описание |
+| Метод | Описание |
 |------|----------|
-| `test_get_books_genre_returns_current_state` | Возвращаемый словарь соответствует текущему состоялению: сначала книга без жанра, после `set_book_genre` — с нужным жанром. |
+| `test_returns_dict_matching_books_and_genres` | Словарь отражает добавление книги и смену жанра; осмысленные имена переменных (`books_by_title`, понятное имя книги). |
 
-### `get_books_for_children`
+### `get_books_for_children` — класс `TestGetBooksForChildren`
 
-| Тест | Описание |
+| Метод | Описание |
 |------|----------|
-| `test_get_books_for_children_by_genre` | Книга с жанром из `genre_age_rating` (например, «Ужасы») не попадает в список для детей; книга с «детским» жанром (например, «Мультфильмы») попадает. |
+| `test_excludes_age_restricted_genre` | Жанр с возрастным рейтингом («Ужасы») не попадает в список для детей. |
+| `test_includes_safe_genre` | Безопасный жанр («Мультфильмы») попадает в список. Отдельные однозначные проверки без условий в `assert`. |
 
-### `add_book_in_favorites` и `get_list_of_favorites_books`
+### `add_book_in_favorites`, `delete_book_from_favorites`, `get_list_of_favorites_books` — класс `TestFavorites`
 
-| Тест | Описание |
+| Метод | Описание |
 |------|----------|
-| `test_add_book_in_favorites_and_no_duplicate` | Книга из `books_genre` добавляется в избранное; повторный вызов не дублирует запись; список совпадает с `get_list_of_favorites_books`. |
-| `test_add_book_in_favorites_unknown_book_ignored` | Книга, которой нет в `books_genre`, в избранное не попадает. |
-| `test_get_list_of_favorites_books_returns_list` | Две добавленные в избранное книги возвращаются в ожидаемом порядке. |
-
-### `delete_book_from_favorites`
-
-| Тест | Описание |
-|------|----------|
-| `test_delete_book_from_favorites` | После удаления книга отсутствует в списке избранного. |
+| `test_add_book_in_favorites_and_no_duplicate` | Добавление в избранное без дубля. |
+| `test_add_book_in_favorites_unknown_book_ignored` | Книга не из `books_genre` не попадает в избранное. |
+| `test_delete_book_from_favorites` | Удаление из избранного. |
+| `test_get_list_of_favorites_books_returns_list` | Порядок нескольких избранных книг. |
 
 ## Итог по прогонам pytest
 
-Именованных тестовых функций: **13**. С учётом параметризации pytest выполняет **17** отдельных тестовых кейсов (видно в выводе `pytest -v`).
+Именованных тестовых **методов** в классах: **14**. С учётом параметризации pytest выполняет **18** отдельных кейсов (см. `pytest -v`).
